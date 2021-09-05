@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Transaction;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
+use App\TransactionDetail;
+use App\User;
+use Illuminate\Support\Facades\Auth;
 
 
 class TransactionController extends Controller
@@ -94,8 +97,9 @@ class TransactionController extends Controller
     public function edit($id)
     {
         $item = Transaction::with(['user'])->findOrFail($id);
-        
-        return view('pages.admin.transaction.edit',[
+
+
+        return view('pages.admin.transaction.edit', [
             'item' => $item
         ]);
     }

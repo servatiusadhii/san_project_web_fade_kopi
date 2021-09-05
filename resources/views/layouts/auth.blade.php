@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <meta name="description" content="" />
     <meta name="author" content="" />
 
+    <link href="/images/icon3.svg" rel="icon">
     <title>@yield('title')</title>
 
     {{-- Style --}}
@@ -16,9 +15,9 @@
     @include('includes.style')
     @stack('addon-style')
 
-  </head>
+</head>
 
-  <body>
+<body>
     {{-- Navbar --}}
     @include('includes.navbar-auth')
 
@@ -32,5 +31,6 @@
     @stack('prepend-script')
     @include('includes.script')
     @stack('addon-script')
-  </body>
+</body>
+
 </html>

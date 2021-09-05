@@ -25,7 +25,7 @@ class ProductController extends Controller
     public function index()
     {
         if (request()->ajax()) {
-            $query = Product::with(['user','category']);
+            $query = Product::with(['user', 'category']);
 
             return Datatables::of($query)
                 ->addColumn('action', function ($item) {
@@ -69,8 +69,8 @@ class ProductController extends Controller
     {
         $users = User::all();
         $categories = Category::all();
-        
-        return view('pages.admin.product.create',[
+
+        return view('pages.admin.product.create', [
             'users' => $users,
             'categories' => $categories
         ]);
@@ -112,11 +112,11 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        $item = Product::with(['category','user'])->findOrFail($id);
+        $item = Product::with(['category', 'user'])->findOrFail($id);
         $users = User::all();
         $categories = Category::all();
-        
-        return view('pages.admin.product.edit',[
+
+        return view('pages.admin.product.edit', [
             'item' => $item,
             'users' => $users,
             'categories' => $categories
@@ -155,6 +155,5 @@ class ProductController extends Controller
         $item->delete();
 
         return redirect()->route('product.index');
-
     }
 }

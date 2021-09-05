@@ -12,12 +12,15 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
 Route::get('/', 'HomeController@index')->name('home');
 
 Route::get('/categories', 'CategoryController@index')->name('categories');
 Route::get('/categories/{id}', 'CategoryController@detail')->name('categories-detail');
 
 Route::get('/details/{id}', 'DetailController@index')->name('detail');
+Route::post('/details/store', 'DetailController@store')->name('detail.store');
+Route::post('/details/{id}/update', 'DetailController@update')->name('detail.update');
 Route::post('/details/{id}', 'DetailController@add')->name('detail-add');
 
 Route::get('/success', 'CartController@success')->name('success');
@@ -30,9 +33,13 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('/cart/{id}', 'CartController@delete')->name('cart-delete');
 
     Route::post('/checkout', 'CheckoutController@process')->name('checkout');
+    Route::post('/checkout/delete', 'CheckoutController@delete')->name('checkout-delete');
+    Route::post('/apply', 'CheckoutController@apply')->name('apply');
 
     Route::get('/dashboard', 'DashboardController@index')
         ->name('dashboard');
+    Route::get('/dashboard/user', 'DashboardController@user')
+        ->name('dashboard-user');
 
     Route::get('/dashboard/products', 'DashboardProductController@index')
         ->name('dashboard-product');
@@ -63,13 +70,12 @@ Route::group(['middleware' => ['auth']], function () {
         ->name('dashboard-settings-account');
     Route::post('/dashboard/update/{redirect}', 'DashboardSettingController@update')
         ->name('dashboard-settings-redirect');
-
 });
 
 Route::prefix('admin')
     ->namespace('Admin')
-    ->middleware(['auth','admin'])
-    ->group(function() {
+    ->middleware(['auth', 'admin'])
+    ->group(function () {
         Route::get('/', 'DashboardController@index')->name('admin-dashboard');
         Route::resource('category', 'CategoryController');
         Route::resource('user', 'UserController');
@@ -79,4 +85,3 @@ Route::prefix('admin')
     });
 
 Auth::routes();
-

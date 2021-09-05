@@ -6,6 +6,7 @@ use App\Cart;
 use Exception;
 use Midtrans\Snap;
 use App\Transaction;
+use App\Voucher;
 use Midtrans\Config;
 use App\TransactionDetail;
 use Midtrans\Notification;
@@ -21,25 +22,44 @@ class CheckoutController extends Controller
         $user->update($request->except('total_price'));
 
         // Proses checkout
-        $code = 'STORE-' . mt_rand(0000,9999);
-        $carts = Cart::with(['product','user'])
-                    ->where('users_id', Auth::user()->id)
-                    ->get();
+        $code = 'STORE-' . mt_rand(0000, 9999);
+        $carts = Cart::with(['product', 'user'])
+            ->where('users_id', Auth::user()->id)
+            ->get();
 
-        $transaction = Transaction::create([
-            'users_id' => Auth::user()->id,
-            'inscurance_price' => 0,
-            'shipping_price' => 0,
-            'total_price' => $request->total_price,
-            'transaction_status' => 'PENDING',
-            'code' => $code
-        ]);
+        if($request->voucher){
+            // Ambil halaman payment midtrans
+            $transaction = Transaction::create([
+                'users_id' => Auth::user()->id,
+                'inscurance_price' => 0,
+                'products_name' => $request->products_name,
+                'shipping_price' => 10000,
+                'total_price' => $request->total_price,
+                'transaction_status' => 'PENDING',
+                'voucher' => $request->voucher,
+                'code' => $code
+            ]);
+            // Redirect ke halaman midtrans
+        } else {
+                // echo $e->getMessage();
+                $transaction = Transaction::create([
+                    'users_id' => Auth::user()->id,
+                    'inscurance_price' => 0,
+                    'products_name' => $request->products_name,
+                    'shipping_price' => 10000,
+                    'total_price' => $request->total_price,
+                    'transaction_status' => 'PENDING',
+                    'code' => $code
+                ]);
+            }
+
 
         foreach ($carts as $cart) {
-            $trx = 'TRX-' . mt_rand(0000,9999);
+            $trx = 'TRX-' . mt_rand(0000, 9999);
 
             TransactionDetail::create([
                 'transactions_id' => $transaction->id,
+                'products_name' => $cart->product->products_name,
                 'products_id' => $cart->product->id,
                 'price' => $cart->product->price,
                 'shipping_status' => 'PENDING',
@@ -49,9 +69,11 @@ class CheckoutController extends Controller
         }
 
         // Delete cart data
-        Cart::with(['product','user'])
-                ->where('users_id', Auth::user()->id)
-                ->delete();
+        Cart::with(['product', 'user','voucher'])
+            ->where('users_id', Auth::user()->id)
+            ->delete();
+        Voucher::where('voucher', $request->voucher)
+            ->delete();
 
         // Konfigurasi midtrans
         Config::$serverKey = config('services.midtrans.serverKey');
@@ -69,7 +91,7 @@ class CheckoutController extends Controller
                 'first_name'    => 'Galih Pratama',
                 'email'         => 'hanamura.iost@gmail.com'
             ),
-            'enabled_payments' => array('gopay','bank_transfer'),
+            'enabled_payments' => array('gopay', 'bank_transfer'),
             'vtweb' => array()
         );
 
@@ -79,9 +101,9 @@ class CheckoutController extends Controller
 
             // Redirect ke halaman midtrans
             return redirect($paymentUrl);
-        }
-        catch (Exception $e) {
-            echo $e->getMessage();
+        } catch (Exception $e) {
+            // echo $e->getMessage();
+            return view('pages.success');
         }
     }
 
@@ -107,28 +129,22 @@ class CheckoutController extends Controller
 
         // Handle notification status midtrans
         if ($status == 'capture') {
-            if ($type == 'credit_card'){
-                if($fraud == 'challenge'){
+            if ($type == 'credit_card') {
+                if ($fraud == 'challenge') {
                     $transaction->status = 'PENDING';
-                }
-                else {
+                } else {
                     $transaction->status = 'SUCCESS';
                 }
             }
-        }
-        else if ($status == 'settlement'){
+        } else if ($status == 'settlement') {
             $transaction->status = 'SUCCESS';
-        }
-        else if($status == 'pending'){
+        } else if ($status == 'pending') {
             $transaction->status = 'PENDING';
-        }
-        else if ($status == 'deny') {
+        } else if ($status == 'deny') {
             $transaction->status = 'CANCELLED';
-        }
-        else if ($status == 'expire') {
+        } else if ($status == 'expire') {
             $transaction->status = 'CANCELLED';
-        }
-        else if ($status == 'cancel') {
+        } else if ($status == 'cancel') {
             $transaction->status = 'CANCELLED';
         }
 
@@ -136,31 +152,21 @@ class CheckoutController extends Controller
         $transaction->save();
 
         // Kirimkan email
-        if ($transaction)
-        {
-            if($status == 'capture' && $fraud == 'accept' )
-            {
+        if ($transaction) {
+            if ($status == 'capture' && $fraud == 'accept') {
                 //
-            }
-            else if ($status == 'settlement')
-            {
+            } else if ($status == 'settlement') {
                 //
-            }
-            else if ($status == 'success')
-            {
+            } else if ($status == 'success') {
                 //
-            }
-            else if($status == 'capture' && $fraud == 'challenge' )
-            {
+            } else if ($status == 'capture' && $fraud == 'challenge') {
                 return response()->json([
                     'meta' => [
                         'code' => 200,
                         'message' => 'Midtrans Payment Challenge'
                     ]
                 ]);
-            }
-            else
-            {
+            } else {
                 return response()->json([
                     'meta' => [
                         'code' => 200,
@@ -177,4 +183,8 @@ class CheckoutController extends Controller
             ]);
         }
     }
+    // public function apply(Request $request)
+    // {
+    //     $voucher = 
+    // }
 }
