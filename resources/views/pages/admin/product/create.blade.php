@@ -66,7 +66,7 @@
                                             <div class="form-group">
                                                 <label>Recommended By</label>
                                                 <select id="recomend_by" name="recomend_by" class="form-control">
-                                                    <option value="{{ $item->recomend_by }}">
+                                                    <option value="Not Recommend Product">
                                                         Not Recommend Product</option>
                                                     <option value="" disabled>----------------</option>
                                                     <option value="Worthy Price">Worthy Price</option>
