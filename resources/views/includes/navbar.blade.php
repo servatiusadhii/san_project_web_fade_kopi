@@ -111,6 +111,7 @@
 
             var imcart = document.getElementById("potoCart");
             imcart.src = '';
+            imcart.style.display = "none";
         }
     }
 </script>
